@@ -13,8 +13,10 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Activation, Dropout
 from tensorflow.python.keras.utils import np_utils
 from sklearn.preprocessing import StandardScaler
+from tensorflow.keras.datasets import mnist
+from sklearn.metrics import f1_score
 
-# import jinja2
+import jinja2
 
 ### 1. Импорт данных
 dataset = pd.read_csv("C:\\Users\\spmn9\\PycharmProjects\\II_Lab\\income.csv")
@@ -102,8 +104,8 @@ print(str(null_sum) + "\n")
 ### 2.12. Визуализировать тепловую карту корреляции признаков
 
 # plt.figure(figsize=(8, 8))
-# dataset.corr().style.format("{:.4}").background_gradient(cmap=plt.get_cmap('coolwarm'), axis=1)
-### TODO: Не получается построить тепловую карту
+dataset.corr().style.format("{:.4}").background_gradient(cmap=plt.get_cmap('coolwarm'), axis=1)
+## TODO: Не получается построить тепловую карту (не выводится на график)
 
 ### 2.13. Если в наборе данных пропущенные значения обозначены специальным
 ###       символом, замените значения в таких ячейках на тип NaN
@@ -252,14 +254,14 @@ X_train, X_test, y_train, y_test = model_selection \
 # plt.xlabel("Number of trees")
 # plt.ylabel("F value")
 # plt.legend()
-#
+
 # # Построение матрицы ошибок
 # best_index = f_values_ran_for_test.index(max(f_values_ran_for_test))
+# best_catboost_trees = trees_number[best_index]
 # print("Оптимальное количество деревьев = " + str(trees_number[best_index]))
-#
-# best_model = CatBoostClassifier(n_estimators=trees_number[best_index], verbose=False)
-# best_model.fit(X_train, y_train)
-# confusion_matrix_ran_for = confusion_matrix(y_test, best_model.predict(X_test))
+# best_catboost = CatBoostClassifier(n_estimators=trees_number[best_index], verbose=False)
+# best_catboost.fit(X_train, y_train)
+# confusion_matrix_ran_for = confusion_matrix(y_test, best_catboost.predict(X_test))
 # cm_data_frame_ran_for = pd.DataFrame(data=confusion_matrix_ran_for,
 #                                       columns=['actual <=50K', 'actual >50K'],
 #                                       index=['predicted <=50K', 'predicted >50K'])
@@ -272,23 +274,24 @@ X_train, X_test, y_train, y_test = model_selection \
 # 7.1. Подготовить данные для обучения нейросети
 
 # Замена всех NaN на самые часто встречающиеся значения в колонке
-filled_attrs = dataset.drop(columns=['income'])
-columns = filled_attrs.columns
-for i in columns:
-    filled_attrs[i].fillna(filled_attrs[i].mode()[0], inplace=True)
 
-# Преобразование всех категориальных признаков в числовые
-filled_attrs_dum = pd.get_dummies(filled_attrs)  # TODO: надо ли здесь выполнять это преобразование
-
-# # Масштабирование
-scaler = StandardScaler()
-attrs_scaled = scaler.fit_transform(filled_attrs_dum)
-
-X_train, X_test, y_train, y_test = model_selection \
-    .train_test_split(attrs_scaled, target)
-
-y_train = np_utils.to_categorical(y_train, 2)
-y_test = np_utils.to_categorical(y_test, 2)
+# filled_attrs = dataset.drop(columns=['income'])
+# columns = filled_attrs.columns
+# for i in columns:
+#     filled_attrs[i].fillna(filled_attrs[i].mode()[0], inplace=True)
+#
+# # Преобразование всех категориальных признаков в числовые
+# filled_attrs_dum = pd.get_dummies(filled_attrs)  # TODO: надо ли здесь выполнять это преобразование
+#
+# # # Масштабирование
+# scaler = StandardScaler()
+# attrs_scaled = scaler.fit_transform(filled_attrs_dum)
+#
+# X_train, X_test, y_train, y_test = model_selection \
+#     .train_test_split(attrs_scaled, target)
+#
+# y_train = np_utils.to_categorical(y_train, 2)
+# y_test = np_utils.to_categorical(y_test, 2)
 
 # 7.2. Обучить модель многослойного перцептрона для задачи
 # классификации с оптимальными параметрами, построить графики
@@ -296,23 +299,23 @@ y_test = np_utils.to_categorical(y_test, 2)
 # эпох обучения. Определите оптимальное количество эпох обучения и
 # архитектуру нейросети. Построить для оптимальной модели матрицу ошибок
 
-NB_CLASSES = y_train.shape[1]
-INPUT_SHAPE = (X_train.shape[1],)
-model = Sequential()
-model.add(Dense(32, input_shape=INPUT_SHAPE))
-model.add(Activation('relu'))
-model.add(Dropout(0.3))
-model.add(Dense(16))
-model.add(Activation('relu'))
-model.add(Dense(8))
-model.add(Activation('relu'))
-model.add(Dense(NB_CLASSES))
-model.add(Activation('softmax'))
-model.summary()
-
-model.compile(loss='binary_crossentropy',
-              optimizer='adam',
-              metrics=['Precision', 'Recall'])
+# NB_CLASSES = y_train.shape[1]
+# INPUT_SHAPE = (X_train.shape[1],)
+# perceptron = Sequential()
+# perceptron.add(Dense(32, input_shape=INPUT_SHAPE))
+# perceptron.add(Activation('relu'))
+# perceptron.add(Dropout(0.3))
+# perceptron.add(Dense(16))
+# perceptron.add(Activation('relu'))
+# perceptron.add(Dense(8))
+# perceptron.add(Activation('relu'))
+# perceptron.add(Dense(NB_CLASSES))
+# perceptron.add(Activation('softmax'))
+# perceptron.summary()
+#
+# perceptron.compile(loss='binary_crossentropy',
+#               optimizer='adam',
+#               metrics=['Precision', 'Recall'])
 
 # epochs = np.arange(1, 30, 1)
 # for i in epochs:
@@ -326,9 +329,137 @@ model.compile(loss='binary_crossentropy',
 #         f1_score_list_test.append(2 * history.history['val_Precision'][j] * history.history['val_Recall'][j] / (
 #                     history.history['val_Precision'][j] + history.history['val_Recall'][j]))
 
+# ЭТОТОТ
+# EPOCHS = 10
+# epochs = np.arange(1, EPOCHS+1, 1)
+# history = perceptron.fit(X_train, y_train, batch_size=32, epochs=EPOCHS, verbose=1, validation_data=(X_test, y_test))
+#
+# f1_score_list_train = []
+# f1_score_list_test = []
+# for i in range(EPOCHS):
+#     f1_score_list_train.append(2 * history.history['precision'][i] * history.history['recall'][i] / (
+#             history.history['precision'][i] +
+#             history.history['recall'][i]))
+#     f1_score_list_test.append(2 * history.history['val_precision'][i] * history.history['val_recall'][i] / (
+#             history.history['val_precision'][i] +
+#             history.history['val_recall'][i]))
+
+
+# Построение графика Fмера(EPOCHS)
+# plt.figure(figsize=(8, 8))
+# plt.plot(epochs, f1_score_list_train, label="F train")
+# plt.plot(epochs, f1_score_list_test, label="F test")
+# plt.title("F values perceptron")
+# plt.xlabel("Number of epochs")
+# plt.ylabel("F value")
+# plt.legend()
+
+# TODO: Нужно делать много моделей с разным параметром EPOCHS?
+# Если да, то какое значение F меры брать для полученной модели (последнее из массива?)
+# Или нужно просто взять одну модель и в ней (обученной для одного EPOCHS)
+# выбрать эпоху, при которой лучшая F мера
+
+
+# Построение матрицы ошибок
+# y_pred = model.predict_classes(X_test) #TODO: Нерабочий метод
+
+# predict_x = perceptron.predict(X_test)
+# classes_x=np.argmax(predict_x,axis=1)
+# y_test_test = y_test[:, 1].T
+# confusion_matrix_preceptron = confusion_matrix(y_test_test, classes_x)
+# cm_data_frame_perceptron = pd.DataFrame(data=confusion_matrix_preceptron,
+#                                       columns=['actual <=50K', 'actual >50K'],
+#                                       index=['predicted <=50K', 'predicted >50K'])
+# print("Матрица ошибок для перцептрона при EPOCHS = " + str(EPOCHS))
+# print(str(cm_data_frame_perceptron))
+
+
+### 8. Повторите пункты 6-7 для набора данных MNIST
+(X_train, y_train), (X_test, y_test) = mnist.load_data()
+samples = np.arange(1, 5, 1)
+# fig = plt.figure(figsize=(8, 8))
+# for i in samples:
+#     image = X_train[i]
+#     if i % 2 == 1:
+#         plt.subplot2grid((2, 2), ((i-1)//2, 0))
+#     else:
+#         plt.subplot2grid((2, 2), ((i-2)//2, 1))
+#     plt.title("Sample " + str(i))
+#     plt.imshow(image, cmap='gray')
+
+# Приводим думерный тензор к одномерному вектору
+X_train = X_train.reshape(X_train.shape[0], 28 * 28)
+X_test = X_test.reshape(X_test.shape[0], 28 * 28)
+
+# Обучаем градиентный бустинг
+
+# print("Модель градиентного бустинга\n")
+# trees_number = np.arange(1, 6, 2)
+# f1_scores_train = []
+# f1_scores_test = []
+#
+# for i in trees_number:
+#     print("/Test/Кол-во деревьев = " + str(i))
+#     model = CatBoostClassifier(n_estimators=i, verbose=False)
+#     model.fit(X_train, y_train)
+#     prediction_train = model.predict(X_train)
+#     prediction_test = model.predict(X_test)
+#     # Для тестовой выборки
+#     f1_scores_train.append(f1_score(y_train, model.predict(X_train), average='micro'))
+#     # Для тренировочной выборки
+#     f1_scores_test.append(f1_score(y_test, model.predict(X_test), average='micro'))
+#
+#
+# plt.figure(figsize=(8, 8))
+# plt.plot(trees_number, f1_scores_train, label="F train")
+# plt.plot(trees_number, f1_scores_test, label="F test")
+# plt.title("F values gradient boost MNIST")
+# plt.xlabel("Number of trees")
+# plt.ylabel("F value")
+# plt.legend()
+
+# Построение матрицы ошибок
+# best_index = f1_scores_test.index(max(f1_scores_test))
+# print("Оптимальное количество деревьев = " + str(trees_number[best_index]))
+# best_catboost = CatBoostClassifier(n_estimators=trees_number[best_index], verbose=False)
+# best_catboost.fit(X_train, y_train)
+# confusion_matrix_catboost = confusion_matrix(y_test, best_catboost.predict(X_test))
+# cm = pd.DataFrame(data = confusion_matrix_catboost,
+#                   columns = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+#                   index = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
+# plt.figure(figsize=(8, 8))
+# plt.title("Матрица ошибок для модели градиентного бустинга MNIST")
+# ax = sns.heatmap(cm, annot=True, fmt="d")
+# print("Матрица ошибок для модели градиентного бустинга MNIST")
+# print(str(cm))
+
+# Обучаем нейросеть
+
+# Преобразуем в категориальные признаки
+y_train_categ = np_utils.to_categorical(y_train, 10)
+y_test_categ = np_utils.to_categorical(y_test, 10)
+
+NB_CLASSES = y_train_categ.shape[1]
+INPUT_SHAPE = (X_train.shape[1],)
+perceptron = Sequential()
+perceptron.add(Dense(32, input_shape=INPUT_SHAPE))
+perceptron.add(Activation('relu'))
+perceptron.add(Dropout(0.3))
+perceptron.add(Dense(16))
+perceptron.add(Activation('relu'))
+perceptron.add(Dense(8))
+perceptron.add(Activation('relu'))
+perceptron.add(Dense(NB_CLASSES))
+perceptron.add(Activation('softmax'))
+perceptron.summary()
+
+perceptron.compile(loss='categorical_crossentropy',
+                   optimizer='adam',
+                   metrics=['Precision', 'Recall'])
+
 EPOCHS = 10
-epochs = np.arange(1, EPOCHS+1, 1)
-history = model.fit(X_train, y_train, batch_size=32, epochs=EPOCHS, verbose=1, validation_data=(X_test, y_test))
+epochs = np.arange(1, EPOCHS + 1, 1)
+history = perceptron.fit(X_train, y_train_categ, batch_size=32, epochs=EPOCHS, verbose=1, validation_data=(X_test, y_test_categ))
 
 f1_score_list_train = []
 f1_score_list_test = []
@@ -340,7 +471,6 @@ for i in range(EPOCHS):
             history.history['val_precision'][i] +
             history.history['val_recall'][i]))
 
-
 # Построение графика Fмера(EPOCHS)
 plt.figure(figsize=(8, 8))
 plt.plot(epochs, f1_score_list_train, label="F train")
@@ -350,27 +480,18 @@ plt.xlabel("Number of epochs")
 plt.ylabel("F value")
 plt.legend()
 
-#TODO: Нужно делать много моделей с разным параметром EPOCHS?
-# Если да, то какое значение F меры брать для полученной модели (последнее из массива?)
-# Или нужно просто взять одну модель и в ней (обученной для одного EPOCHS)
-# выбрать эпоху, при которой лучшая F мера
-
-
 # Построение матрицы ошибок
-# y_pred = model.predict_classes(X_test) #TODO: Нерабочий метод
 
-predict_x=model.predict(X_test)
-classes_x=np.argmax(predict_x,axis=1)
-y_test_test = y_test[:, 1].T
-confusion_matrix_preceptron = confusion_matrix(y_test_test, classes_x)
-cm_data_frame_perceptron = pd.DataFrame(data=confusion_matrix_preceptron,
-                                      columns=['actual <=50K', 'actual >50K'],
-                                      index=['predicted <=50K', 'predicted >50K'])
-print("Матрица ошибок для перцептрона при EPOCHS = " + str(EPOCHS))
-print(str(cm_data_frame_perceptron))
-
-
-### 8. Повторите пункты 6-7 для набора данных MNIST
-
+predict_x = perceptron.predict(X_test)
+classes_x = np.argmax(predict_x, axis=1)
+confusion_matrix_preceptron = confusion_matrix(y_test, classes_x)
+cm = pd.DataFrame(data = confusion_matrix_preceptron,
+                  columns = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+                  index = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
+plt.figure(figsize=(8, 8))
+plt.title("Матрица ошибок для перцептрона MNIST")
+ax = sns.heatmap(cm, annot=True, fmt="d")
+print("Матрица ошибок для перцептрона MNIST")
+print(str(cm))
 
 plt.show()
