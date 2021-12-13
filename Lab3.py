@@ -15,25 +15,24 @@ from tensorflow.python.keras.utils import np_utils
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.datasets import mnist
 from sklearn.metrics import f1_score
-
 import jinja2
 
 ### 1. Импорт данных
 dataset = pd.read_csv("C:\\Users\\spmn9\\PycharmProjects\\II_Lab\\income.csv")
 
 ### 2.1. Определение признаков в которых есть пропущенные значения и подсчёт количества нулевых ячеек
-attributes_with_null = dataset.isin(
-    [' ?'])  # TODO: исправил на isin, поскольку отсутствие элемента обозначается символом ' ?'
-null_sum = attributes_with_null.sum()
-print("Признаки и количество пропущенных значений")
-print(str(null_sum) + "\n")
+
+# attributes_with_null = dataset.isin([' ?'])
+# null_sum = attributes_with_null.sum()
+# print("Признаки и количество пропущенных значений")
+# print(str(null_sum) + "\n")
 
 ### 2.2. Построить гистограмму объектов по признаку «workclass»
 
 # plt.figure(figsize=(12, 6))
-# dataset['workclass'].hist()
+# bins = np.arange(10) - 0.5
+# plt.hist(dataset['workclass'], bins)
 # plt.title("Histogram of objects according to \"workclass\" attribute")
-# TODO Криво выводится гистограмма????
 
 ### 2.3. Визуализировать совмещенные гистограммы объектов по признаку
 ###      «income» для двух значений признака «sex» на одном графике
@@ -69,7 +68,6 @@ print(str(null_sum) + "\n")
 # x = dataset['age']
 # ax = sns.distplot(x, bins=10, color='blue')
 # ax.set_title("Distribution of age variable")
-### TODO "distplot()" является deprecated
 
 ### 2.8. Визуализировать распределение объектов по признаку «age», используя «ящик с усами»
 
@@ -104,30 +102,30 @@ print(str(null_sum) + "\n")
 ### 2.12. Визуализировать тепловую карту корреляции признаков
 
 # plt.figure(figsize=(8, 8))
-dataset.corr().style.format("{:.4}").background_gradient(cmap=plt.get_cmap('coolwarm'), axis=1)
-## TODO: Не получается построить тепловую карту (не выводится на график)
+# sns.heatmap(dataset.corr(), annot = True)
 
 ### 2.13. Если в наборе данных пропущенные значения обозначены специальным
 ###       символом, замените значения в таких ячейках на тип NaN
-dataset.replace(' ?', np.NaN, inplace=True)
+
+# dataset.replace(' ?', np.NaN, inplace=True)
 
 ### 2.14. Определить категориальные признаки в наборе данных
-categorical = [var for var in dataset.columns if dataset[var].dtype == np.object0]
-categorical_attrs = dataset[categorical].head()
-print("Категориальные признаки\n" + str(categorical) + "\n")
+# categorical = [var for var in dataset.columns if dataset[var].dtype == np.object0]
+# categorical_attrs = dataset[categorical].head()
+# print("Категориальные признаки\n" + str(categorical) + "\n")
 
 ### 2.15. Определить числовые признаки в наборе данных
-numeric = [var for var in dataset.columns if dataset[var].dtype == np.int64]
-numeric_attrs = dataset[numeric].head()
-print("Числовые признаки\n" + str(numeric) + "\n")
+# numeric = [var for var in dataset.columns if dataset[var].dtype == np.int64]
+# numeric_attrs = dataset[numeric].head()
+# print("Числовые признаки\n" + str(numeric) + "\n")
 
 ### 3. Разделить выборку на тренировочную и тестовую по целевой переменной «income»
-attrs = pd.get_dummies(dataset.drop(columns=['income']))
-target = dataset['income']
-target = np.where(target == ' <=50K', 0, 1)
-
-X_train, X_test, y_train, y_test = model_selection \
-    .train_test_split(attrs, target)
+# attrs = pd.get_dummies(dataset.drop(columns=['income']))
+# target = dataset['income']
+# target = np.where(target == ' <=50K', 0, 1)
+#
+# X_train, X_test, y_train, y_test = model_selection \
+#     .train_test_split(attrs, target)
 
 ### 4. Обучить модель решающего дерева для задачи классификации,
 #      построить графики зависимости F-меры на обучающей выборке и на тестовой
@@ -160,8 +158,9 @@ X_train, X_test, y_train, y_test = model_selection \
 # plt.xlabel("deep")
 # plt.ylabel("F value")
 # plt.legend()
-#
-# # Построение матрицы ошибок
+
+# Построение матрицы ошибок
+
 # best_index = f_values_dec_tree_test.index(max(f_values_dec_tree_test))
 # print("Лучшая глубина решающего дерева = " + str(deep[best_index]))
 #
@@ -207,8 +206,9 @@ X_train, X_test, y_train, y_test = model_selection \
 # plt.xlabel("Number of trees")
 # plt.ylabel("F value")
 # plt.legend()
-#
-# # Построение матрицы ошибок
+
+# Построение матрицы ошибок
+
 # best_index = f_values_ran_for_test.index(max(f_values_ran_for_test))
 # print("Оптимальное количество деревьев = " + str(trees_number[best_index]))
 #
@@ -255,7 +255,8 @@ X_train, X_test, y_train, y_test = model_selection \
 # plt.ylabel("F value")
 # plt.legend()
 
-# # Построение матрицы ошибок
+# Построение матрицы ошибок
+
 # best_index = f_values_ran_for_test.index(max(f_values_ran_for_test))
 # best_catboost_trees = trees_number[best_index]
 # print("Оптимальное количество деревьев = " + str(trees_number[best_index]))
@@ -279,11 +280,13 @@ X_train, X_test, y_train, y_test = model_selection \
 # columns = filled_attrs.columns
 # for i in columns:
 #     filled_attrs[i].fillna(filled_attrs[i].mode()[0], inplace=True)
-#
-# # Преобразование всех категориальных признаков в числовые
-# filled_attrs_dum = pd.get_dummies(filled_attrs)  # TODO: надо ли здесь выполнять это преобразование
-#
-# # # Масштабирование
+
+# Преобразование всех категориальных признаков в числовые\
+
+# filled_attrs_dum = pd.get_dummies(filled_attrs)
+
+# Масштабирование
+
 # scaler = StandardScaler()
 # attrs_scaled = scaler.fit_transform(filled_attrs_dum)
 #
@@ -316,21 +319,8 @@ X_train, X_test, y_train, y_test = model_selection \
 # perceptron.compile(loss='binary_crossentropy',
 #               optimizer='adam',
 #               metrics=['Precision', 'Recall'])
-
-# epochs = np.arange(1, 30, 1)
-# for i in epochs:
-#     history = model.fit(X_train, y_train, batch_size=32, epochs=i, verbose=1, validation_data=(X_test, y_test))
-#     f1_score_list_train = []
-#     f1_score_list_test = []
-#     for j in range(i):
-#         f1_score_list_train.append(
-#             2 * history.history['Precision'][j] * history.history['Recall'][j] / (
-#                     history.history['Precision'][j] + history.history['Recall'][j]))
-#         f1_score_list_test.append(2 * history.history['val_Precision'][j] * history.history['val_Recall'][j] / (
-#                     history.history['val_Precision'][j] + history.history['val_Recall'][j]))
-
-# ЭТОТОТ
-# EPOCHS = 10
+#
+# EPOCHS = 30
 # epochs = np.arange(1, EPOCHS+1, 1)
 # history = perceptron.fit(X_train, y_train, batch_size=32, epochs=EPOCHS, verbose=1, validation_data=(X_test, y_test))
 #
@@ -343,9 +333,9 @@ X_train, X_test, y_train, y_test = model_selection \
 #     f1_score_list_test.append(2 * history.history['val_precision'][i] * history.history['val_recall'][i] / (
 #             history.history['val_precision'][i] +
 #             history.history['val_recall'][i]))
-
-
-# Построение графика Fмера(EPOCHS)
+#
+#
+# # Построение графика Fмера(EPOCHS)
 # plt.figure(figsize=(8, 8))
 # plt.plot(epochs, f1_score_list_train, label="F train")
 # plt.plot(epochs, f1_score_list_test, label="F test")
@@ -354,14 +344,7 @@ X_train, X_test, y_train, y_test = model_selection \
 # plt.ylabel("F value")
 # plt.legend()
 
-# TODO: Нужно делать много моделей с разным параметром EPOCHS?
-# Если да, то какое значение F меры брать для полученной модели (последнее из массива?)
-# Или нужно просто взять одну модель и в ней (обученной для одного EPOCHS)
-# выбрать эпоху, при которой лучшая F мера
-
-
 # Построение матрицы ошибок
-# y_pred = model.predict_classes(X_test) #TODO: Нерабочий метод
 
 # predict_x = perceptron.predict(X_test)
 # classes_x=np.argmax(predict_x,axis=1)
@@ -377,15 +360,15 @@ X_train, X_test, y_train, y_test = model_selection \
 ### 8. Повторите пункты 6-7 для набора данных MNIST
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
 samples = np.arange(1, 5, 1)
-# fig = plt.figure(figsize=(8, 8))
-# for i in samples:
-#     image = X_train[i]
-#     if i % 2 == 1:
-#         plt.subplot2grid((2, 2), ((i-1)//2, 0))
-#     else:
-#         plt.subplot2grid((2, 2), ((i-2)//2, 1))
-#     plt.title("Sample " + str(i))
-#     plt.imshow(image, cmap='gray')
+fig = plt.figure(figsize=(8, 8))
+for i in samples:
+    image = X_train[i]
+    if i % 2 == 1:
+        plt.subplot2grid((2, 2), ((i-1)//2, 0))
+    else:
+        plt.subplot2grid((2, 2), ((i-2)//2, 1))
+    plt.title("Sample " + str(i))
+    plt.imshow(image, cmap='gray')
 
 # Приводим думерный тензор к одномерному вектору
 X_train = X_train.reshape(X_train.shape[0], 28 * 28)
@@ -393,45 +376,45 @@ X_test = X_test.reshape(X_test.shape[0], 28 * 28)
 
 # Обучаем градиентный бустинг
 
-# print("Модель градиентного бустинга\n")
-# trees_number = np.arange(1, 6, 2)
-# f1_scores_train = []
-# f1_scores_test = []
-#
-# for i in trees_number:
-#     print("/Test/Кол-во деревьев = " + str(i))
-#     model = CatBoostClassifier(n_estimators=i, verbose=False)
-#     model.fit(X_train, y_train)
-#     prediction_train = model.predict(X_train)
-#     prediction_test = model.predict(X_test)
-#     # Для тестовой выборки
-#     f1_scores_train.append(f1_score(y_train, model.predict(X_train), average='micro'))
-#     # Для тренировочной выборки
-#     f1_scores_test.append(f1_score(y_test, model.predict(X_test), average='micro'))
-#
-#
-# plt.figure(figsize=(8, 8))
-# plt.plot(trees_number, f1_scores_train, label="F train")
-# plt.plot(trees_number, f1_scores_test, label="F test")
-# plt.title("F values gradient boost MNIST")
-# plt.xlabel("Number of trees")
-# plt.ylabel("F value")
-# plt.legend()
+print("Модель градиентного бустинга\n")
+trees_number = np.arange(1, 100, 4)
+f1_scores_train = []
+f1_scores_test = []
+
+for i in trees_number:
+    print("/Test/Кол-во деревьев = " + str(i))
+    model = CatBoostClassifier(n_estimators=i, verbose=False)
+    model.fit(X_train, y_train)
+    prediction_train = model.predict(X_train)
+    prediction_test = model.predict(X_test)
+    # Для тестовой выборки
+    f1_scores_train.append(f1_score(y_train, model.predict(X_train), average='micro'))
+    # Для тренировочной выборки
+    f1_scores_test.append(f1_score(y_test, model.predict(X_test), average='micro'))
+
+
+plt.figure(figsize=(8, 8))
+plt.plot(trees_number, f1_scores_train, label="F train")
+plt.plot(trees_number, f1_scores_test, label="F test")
+plt.title("F values gradient boost MNIST")
+plt.xlabel("Number of trees")
+plt.ylabel("F value")
+plt.legend()
 
 # Построение матрицы ошибок
-# best_index = f1_scores_test.index(max(f1_scores_test))
-# print("Оптимальное количество деревьев = " + str(trees_number[best_index]))
-# best_catboost = CatBoostClassifier(n_estimators=trees_number[best_index], verbose=False)
-# best_catboost.fit(X_train, y_train)
-# confusion_matrix_catboost = confusion_matrix(y_test, best_catboost.predict(X_test))
-# cm = pd.DataFrame(data = confusion_matrix_catboost,
-#                   columns = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
-#                   index = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
-# plt.figure(figsize=(8, 8))
-# plt.title("Матрица ошибок для модели градиентного бустинга MNIST")
-# ax = sns.heatmap(cm, annot=True, fmt="d")
-# print("Матрица ошибок для модели градиентного бустинга MNIST")
-# print(str(cm))
+best_index = f1_scores_test.index(max(f1_scores_test))
+print("Оптимальное количество деревьев = " + str(trees_number[best_index]))
+best_catboost = CatBoostClassifier(n_estimators=trees_number[best_index], verbose=False)
+best_catboost.fit(X_train, y_train)
+confusion_matrix_catboost = confusion_matrix(y_test, best_catboost.predict(X_test))
+cm = pd.DataFrame(data = confusion_matrix_catboost,
+                  columns = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+                  index = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
+plt.figure(figsize=(8, 8))
+plt.title("Матрица ошибок для модели градиентного бустинга MNIST")
+ax = sns.heatmap(cm, annot=True, fmt="d")
+print("Матрица ошибок для модели градиентного бустинга MNIST")
+print(str(cm))
 
 # Обучаем нейросеть
 
@@ -457,7 +440,7 @@ perceptron.compile(loss='categorical_crossentropy',
                    optimizer='adam',
                    metrics=['Precision', 'Recall'])
 
-EPOCHS = 10
+EPOCHS = 30
 epochs = np.arange(1, EPOCHS + 1, 1)
 history = perceptron.fit(X_train, y_train_categ, batch_size=32, epochs=EPOCHS, verbose=1, validation_data=(X_test, y_test_categ))
 
